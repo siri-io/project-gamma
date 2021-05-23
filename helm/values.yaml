@@ -1,0 +1,3 @@
+replicaCount: 1
+containerName: jsdrome/ipwa-core
+containerPort: 5001

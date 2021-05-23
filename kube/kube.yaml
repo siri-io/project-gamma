@@ -1,0 +1,69 @@
+---
+apiVersion: "apps/v1"
+kind: "Deployment"
+metadata:
+  name: "project-icarus-dep"
+  namespace: "default"
+  labels:
+    label-key: "project-icarus-dep-lbl"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      label-key: "project-icarus-dep-lbl"
+  template:
+    metadata:
+      labels:
+        label-key: "project-icarus-dep-lbl"
+    spec:
+      containers:
+      - name: "project-icarus-sha256-1"
+        image: "gcr.io/project-icarus/icarus:latest"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: project-icarus-svc
+  labels:
+    label-key: project-icarus-dep-lbl
+spec:
+  type: NodePort
+  ports:
+  - port: 6001
+    targetPort: 3001
+  selector:
+    label-key: project-icarus-dep-lbl
+# ---
+# apiVersion: "autoscaling/v2beta1"
+# kind: "HorizontalPodAutoscaler"
+# metadata:
+#   name: "project-icarus-autoscale"
+#   namespace: "default"
+#   labels:
+#     label-key: "project-icarus-deployment"
+# spec:
+#   scaleTargetRef:
+#     kind: "Deployment"
+#     name: "project-icarus"
+#     apiVersion: "apps/v1"
+#   minReplicas: 1
+#   maxReplicas: 5
+#   metrics:
+#   - type: "Resource"
+#     resource:
+#       name: "cpu"
+#       targetAverageUtilization: 80
+---
+apiVersion: "extensions/v1beta1"
+kind: "Ingress"
+metadata:
+  name: "project-icarus-ingress"
+  namespace: "default"
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: project-icarus-ip
+    # networking.gke.io/managed-certificates: "project-icarus-ssl"
+spec:
+  backend:
+    serviceName: "project-icarus-svc"
+    servicePort: 6001
+

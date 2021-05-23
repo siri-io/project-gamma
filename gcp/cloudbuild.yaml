@@ -1,0 +1,31 @@
+steps:
+# - name: 'gcr.io/cloud-builders/npm:node-10.10.0'
+#   args: ['install']
+
+# - name: 'gcr.io/cloud-builders/npm:node-10.10.0'
+#   args: ['run', 'test']
+
+# - name: 'gcr.io/cloud-builders/npm:node-10.10.0'
+#   args: ['run', 'build:client:prod']
+
+# - name: 'gcr.io/cloud-builders/npm:node-10.10.0'
+#   args: ['run', 'build:server:prod']
+
+- name: 'gcr.io/cloud-builders/docker'
+  args: [ 'build', '-t', 'gcr.io/${PROJECT_ID}/project-icarus', '-f', 'infra/docker/Dockerfile', '.' ]
+
+  # push container image
+- name: "gcr.io/cloud-builders/docker"
+  args: ["push", "gcr.io/${PROJECT_ID}/project-icarus:latest"]
+  # deploy container image to GKE
+
+- name: 'gcr.io/cloud-builders/gke-deploy'
+  args:
+  - run
+  - --filename=infra/kube/kube.yaml
+  - --image=gcr.io/${PROJECT_ID}/project-icarus:latest
+  - --location=${_CLOUDSDK_COMPUTE_ZONE}
+  - --cluster=${_CLOUDSDK_CONTAINER_CLUSTER}
+
+# images:
+# - 'gcr.io/$PROJECT_ID/project-icarus'
